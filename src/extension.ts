@@ -187,7 +187,13 @@ function storeHistoryDataPoint(remaining: number, limit: number, reset: number) 
 // Remove data points older than 1 hour
 function cleanupOldHistory() {
 	const oneHourAgo = Date.now() - (60 * 60 * 1000);
+	const originalLength = historyData.length;
 	historyData = historyData.filter(point => point.timestamp >= oneHourAgo);
+	
+	// Persist changes if any data was removed
+	if (historyData.length !== originalLength) {
+		extensionContext.globalState.update('rateLimitHistory', historyData);
+	}
 }
 
 // Show rate limit history in a webview
@@ -288,7 +294,8 @@ function getHistoryWebviewContent(data: RateLimitDataPoint[]): string {
 	// Generate X-axis labels (time)
 	const numXLabels = Math.min(6, data.length);
 	const xLabels = Array.from({ length: numXLabels }, (_, i) => {
-		const index = Math.floor((i / (numXLabels - 1)) * (data.length - 1));
+		// Handle the edge case where numXLabels is 1
+		const index = numXLabels === 1 ? 0 : Math.floor((i / (numXLabels - 1)) * (data.length - 1));
 		const point = data[index];
 		const x = padding.left + ((point.timestamp - minTime) / timeRange) * graphWidth;
 		const time = new Date(point.timestamp).toLocaleTimeString();
