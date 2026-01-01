@@ -9,6 +9,7 @@ import { Octokit } from '@octokit/core';
 let myStatusBarItem: vscode.StatusBarItem;
 let intervalId: ReturnType<typeof setInterval> | undefined;
 let exceededDate: Date | undefined;
+let hasShownExceededWarning = false;
 
 export async function activate({ subscriptions }: vscode.ExtensionContext) {
 	let pollInterval = vscode.workspace.getConfiguration('githubRateLimit').get<number>('pollIntervalSeconds', 1);
@@ -86,19 +87,24 @@ async function pollAndDisplayRateLimit() {
 				exceededDate = now;
 			}
 			myStatusBarItem.text = `$(github) Reset: ${resetTime}`;
-			myStatusBarItem.tooltip = `GitHub Rate limit exceeded at or before ${exceededDate.toLocaleTimeString()}! Resets at ${resetDate?.toLocaleTimeString()}` + '\n' + tooltipText;
+			myStatusBarItem.tooltip = new vscode.MarkdownString(`GitHub Rate limit exceeded at or before ${exceededDate.toLocaleTimeString()}! Resets at ${resetDate?.toLocaleTimeString()}\n\n${tooltipText.value}`);
 			myStatusBarItem.color = 'red';
-			vscode.window.showWarningMessage(`$(alert) GitHub Rate limit exceeded! Resets at: ${resetTime}`);
+			// Only show the warning message once when the limit is first exceeded
+			if (!hasShownExceededWarning) {
+				hasShownExceededWarning = true;
+				vscode.window.showWarningMessage(`GitHub Rate limit exceeded! Resets at: ${resetTime}`);
+			}
 		} else {
 			if (exceededDate) {
 				exceededDate = undefined; // Reset exceeded date if we are back to normal
+				hasShownExceededWarning = false; // Reset the warning flag so it can show again next time
 			}
 			myStatusBarItem.text = `$(github) ${remaining}`;
 			myStatusBarItem.color = undefined;
 			myStatusBarItem.tooltip = tooltipText;
 		}
-	} catch (err: any) {
-		myStatusBarItem.text = `$(github) Error: ${err.message}`;
+	} catch (err) {
+		myStatusBarItem.text = `$(github) Error: ${err instanceof Error ? err.message : String(err)}`;
 	}
 	myStatusBarItem.show();
 }
