@@ -87,7 +87,8 @@ async function pollAndDisplayRateLimit() {
 				exceededDate = now;
 			}
 			myStatusBarItem.text = `$(github) Reset: ${resetTime}`;
-			myStatusBarItem.tooltip = new vscode.MarkdownString(`GitHub Rate limit exceeded at or before ${exceededDate.toLocaleTimeString()}! Resets at ${resetDate?.toLocaleTimeString()}\n\n${tooltipText.value}`);
+			const exceededMessage = `GitHub Rate limit exceeded at or before ${exceededDate.toLocaleTimeString()}! Resets at ${resetDate?.toLocaleTimeString()}\n\n`;
+			myStatusBarItem.tooltip = new vscode.MarkdownString(exceededMessage + tooltipText.value);
 			myStatusBarItem.color = 'red';
 			// Only show the warning message once when the limit is first exceeded
 			if (!hasShownExceededWarning) {
