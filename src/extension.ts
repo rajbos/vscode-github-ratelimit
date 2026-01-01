@@ -256,7 +256,8 @@ function getHistoryWebviewContent(data: RateLimitDataPoint[]): string {
 	const timestamps = data.map(d => d.timestamp);
 	const minTime = Math.min(...timestamps);
 	const maxTime = Math.max(...timestamps);
-	const timeRange = maxTime - minTime || 1; // Avoid division by zero
+	// For a single data point, use a 1-hour time range centered on that point for better visualization
+	const timeRange = maxTime - minTime || (60 * 60 * 1000); // Default to 1 hour if single point
 
 	const maxLimit = Math.max(...data.map(d => d.limit));
 	const maxValue = maxLimit * 1.1; // Add 10% padding at top
@@ -295,7 +296,9 @@ function getHistoryWebviewContent(data: RateLimitDataPoint[]): string {
 	const numXLabels = Math.min(6, data.length);
 	const xLabels = Array.from({ length: numXLabels }, (_, i) => {
 		// Handle the edge case where numXLabels is 1
-		const index = numXLabels === 1 ? 0 : Math.floor((i / (numXLabels - 1)) * (data.length - 1));
+		let index = numXLabels === 1 ? 0 : Math.floor((i / (numXLabels - 1)) * (data.length - 1));
+		// Ensure index is within bounds
+		index = Math.min(index, data.length - 1);
 		const point = data[index];
 		const x = padding.left + ((point.timestamp - minTime) / timeRange) * graphWidth;
 		const time = new Date(point.timestamp).toLocaleTimeString();
