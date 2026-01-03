@@ -44,6 +44,12 @@
 	},
 	"packageManager": "pnpm@8.15.4",
 	"contributes": {
+		"commands": [
+			{
+				"command": "githubRateLimit.showHistory",
+				"title": "Show GitHub Rate Limit History"
+			}
+		],
 		"configuration": {
 			"properties": {
 				"githubRateLimit.pollIntervalSeconds": {
@@ -51,6 +57,12 @@
 					"type": "number",
 					"default": 1,
 					"description": "Interval in seconds (can be fractional, e.g. 0.5) for polling the GitHub rate limit."
+				},
+				"githubRateLimit.historySaveIntervalMinutes": {
+					"title": "History Save Interval",
+					"type": "number",
+					"default": 5,
+					"description": "Interval in minutes for saving rate limit history data points. Default is 5 minutes."
 				}
 			}
 		}

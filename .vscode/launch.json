@@ -12,7 +12,7 @@
 			],
 			"sourceMaps": true,
 			"outFiles": [
-				"${workspaceRoot}/out/**/*.js"
+				"${workspaceRoot}/dist/**/*.js"
 			]
 		}
 	]
